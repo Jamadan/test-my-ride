@@ -1,29 +1,14 @@
-# mock-my-ride
+# test-my-ride
 
-Creates an object copy wiith all functions returns as a jest.mock that returns the origina, implementation
-Also creates a function to mock the return value of an imported function
+Creates an test file next to the passed filename, automacks all imports and creates describe block per function with correct mocks inserted
 
 # Installation
 
-`npm install mock-my-ride`
+`npm install test-my-ride`
 
 # Usage example
 
 ```javascript
-import { mockFile, mockFunction } from 'mock-my-ride';
-
-import * as funcsToMock from './sub-func';
-mockFile(funcsToMock);
-
-// Functions under test
-import { isString } from './index';
-
-describe('isString', () => {
-  it('return true when isStringSub is true', () => {
-    mockFunction(funcsToMock.isStringSub, true);
-
-    expect(isString()).toEqual(true);
-  });
-});
+// Coming soon
 
 ```
