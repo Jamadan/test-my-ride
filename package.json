@@ -21,7 +21,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/HartleyOriginalJam/test-my-ride.git"
+    "url": "git+https://github.com/jamadan/test-my-ride.git"
   },
   "keywords": [
     "mock",
@@ -30,9 +30,9 @@
   "author": "J Hartley",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/HartleyOriginalJam/test-my-ride/issues"
+    "url": "https://github.com/jamadan/test-my-ride/issues"
   },
-  "homepage": "https://github.com/HartleyOriginalJam/test-my-ride#readme",
+  "homepage": "https://github.com/jamadan/test-my-ride#readme",
   "dependencies": {
     "esprima": "^4.0.1",
     "mock-my-ride": "^0.1.3",
