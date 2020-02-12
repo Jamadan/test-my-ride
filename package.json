@@ -1,7 +1,7 @@
 {
   "name": "test-my-ride",
   "version": "0.1.2",
-  "description": "Boiler plate test project",
+  "description": "Funtion that creates boiler plate test file with descriptors and automocks from imports",
   "main": "lib/main/index.js",
   "module": "lib/module/index.js",
   "browser": "lib/browser/index.js",
