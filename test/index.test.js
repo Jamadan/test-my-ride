@@ -4,7 +4,7 @@ import * as subFuncs from './sub-func';
 mockFile(subFuncs);
 
 // Functions under test
-import { isString, isNumber } from './index';
+import isNumber, { isString } from './index';
 
 describe('isString', () => {
   it('return true when isStringSub is true', () => {
