@@ -1,6 +1,6 @@
 # test-my-ride
 
-Creates an test file next to the passed filename, automacks all imports and creates describe block per function with correct mocks inserted
+Creates a test file next to the passed filename, mocks all imports and creates describe block per function with correct mocks inserted
 
 # Installation
 
