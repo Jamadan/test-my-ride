@@ -2,7 +2,14 @@ import * as babel from '@babel/parser';
 import traverse from '@babel/traverse';
 
 export default filename => {
-  const ast = babel.parse(filename, { sourceType: 'module' });
+  const ast = babel.parse(filename, {
+    sourceType: 'module',
+    plugins: [
+      // enable jsx and ts syntax
+      'jsx',
+      'typescript'
+    ]
+  });
   // console.log(parsed);
 
   const fns = {
@@ -51,25 +58,29 @@ export default filename => {
       );
     },
     ExportNamedDeclaration: path => {
-      const fnName = path.node.declaration.declarations[0].id.name;
-      fns.namedFns[fnName] = [];
-      traverse(
-        path.node,
-        {
-          CallExpression: path2 => {
-            // We are only going to mock imports
-            if (
-              fns.importedFns
-                .map(fn => fn.name)
-                .includes(path2.node.callee.name)
-            ) {
-              fns.namedFns[fnName].push(path2.node.callee.name);
+      const fnName =
+        path.node.declaration.declarations &&
+        path.node.declaration.declarations[0].id.name;
+      if (fnName) {
+        fns.namedFns[fnName] = [];
+        traverse(
+          path.node,
+          {
+            CallExpression: path2 => {
+              // We are only going to mock imports
+              if (
+                fns.importedFns
+                  .map(fn => fn.name)
+                  .includes(path2.node.callee.name)
+              ) {
+                fns.namedFns[fnName].push(path2.node.callee.name);
+              }
             }
-          }
-        },
-        path.scope,
-        path
-      );
+          },
+          path.scope,
+          path
+        );
+      }
     }
   });
 
