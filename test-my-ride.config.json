@@ -1,0 +1,6 @@
+{
+  "prettier": {
+    "semi": true,
+    "singleQuote": true
+  }
+}

@@ -14,7 +14,31 @@ import {
   createNamedDescribes
 } from './create-statements';
 
-export default filename => {
+export default (filename, pathToJsonConfig) => {
+  let config = {
+    prettier: {
+      parser: 'babel',
+      plugins: [prettierBabylon],
+      semi: true,
+      singleQuote: true
+    }
+  };
+  if (pathToJsonConfig) {
+    const jsonConfig = require(path.join(
+      process.cwd() + '/' + pathToJsonConfig
+    ));
+
+    config = {
+      ...jsonConfig,
+      prettier: {
+        ...jsonConfig.prettier,
+        ...{
+          parser: 'babel',
+          plugins: [prettierBabylon]
+        }
+      }
+    };
+  }
   const file = read.sync(path.join(process.cwd() + '/' + filename), {
     encoding: 'utf8'
   });
@@ -51,12 +75,6 @@ export default filename => {
     path.join(
       process.cwd() + '/' + filenameParts.join('.') + '.test-my-ride.' + ext
     ),
-    prettier.format(outputTestFileString, {
-      parser: 'babel',
-      plugins: [prettierBabylon],
-      presets: ['@babel/preset-env'],
-      semi: true,
-      singleQuote: true
-    })
+    prettier.format(outputTestFileString, config.prettier)
   );
 };
