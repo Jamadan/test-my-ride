@@ -1,3 +1,4 @@
+import path from 'path';
 import * as read from 'read-file';
 import fs from 'fs';
 import getFns from './get-fns';
@@ -10,7 +11,9 @@ import {
 } from './create-statements';
 
 export default filename => {
-  const file = read.sync(filename, { encoding: 'utf8' });
+  const file = read.sync(path.join(process.cwd() + '/' + filename), {
+    encoding: 'utf8'
+  });
   // console.log(file);
 
   const fns = getFns(file);
@@ -38,5 +41,10 @@ ${describes}
 
   const filenameParts = filename.split('.');
   const ext = filenameParts.pop();
-  fs.writeFileSync(filename + '.test-my-ride.' + ext, outputTestFileString);
+  fs.writeFileSync(
+    path.join(
+      process.cwd() + '/' + filenameParts.join('.') + '.test-my-ride.' + ext
+    ),
+    outputTestFileString
+  );
 };

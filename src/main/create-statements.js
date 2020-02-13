@@ -72,5 +72,7 @@ export const createIt = (name, fns) => {
 };
 
 export const createSubjectUnderTestStatement = filename => {
-  return `import * as subjectUnderTest from '${filename}';`;
+  const filenameParts = filename.split('/');
+  const file = filenameParts.pop();
+  return `import * as subjectUnderTest from './${file}';`;
 };

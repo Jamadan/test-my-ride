@@ -5,7 +5,7 @@ mockFile(importFns0);
 const isNumberSub = importFns0.default;
 const { isStringSub } = importFns0;
 
-import * as subjectUnderTest from '../test/index.js';
+import * as subjectUnderTest from './index.js';
 
 describe('defaultExport', () => {
   it('returns true when isNumberSub is true', () => {
