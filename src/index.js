@@ -1,44 +1,45 @@
-import * as esprima from 'esprima';
-const readEachLineSync = require('read-each-line-sync');
+import * as read from 'read-file';
+import fs from 'fs';
+import getFns from './get-fns';
+import {
+  createImportStatements,
+  createMockFileStatements,
+  createAssignMockStatements,
+  createDescribes,
+  createSubjectUnderTestStatement
+} from './create-statements';
 
-import * as babel from '@babel/parser';
-import traverse from '@babel/traverse';
-const read = require('read-file');
-
-// import isNumberSub, { isStringSub } from '../test/sub-func';
-import * as importedFuncs from '../test/index';
-
-export default () => {
-  const filename = __dirname + '/../test/index.js';
-
-  const file = read.sync(filename, { encoding: 'utf8' });
+export default filename => {
+  const file = read.sync(__dirname + '/' + filename, { encoding: 'utf8' });
   // console.log(file);
 
-  const parsed = babel.parse(file, { sourceType: 'module' });
-  // console.log(parsed);
+  const fns = getFns(file);
+  //console.log(fns);
 
-  const exportedFns = parsed.program.body.filter(
-    node => node.type === 'ExportNamedDeclaration'
+  const importFiles = [...new Set(fns.importedFns.map(fn => fn.location))];
+  const importStatements = createImportStatements(importFiles);
+  const mockStatements = createMockFileStatements(importFiles);
+
+  const assignMocksStatements = createAssignMockStatements(importFiles, fns);
+  const describes = createDescribes(fns);
+
+  const sutStatement = createSubjectUnderTestStatement(filename);
+
+  const outputTestFileString = `import { mockFile, mockFunction } from 'mock-my-ride';
+
+${importStatements}
+${mockStatements}
+${assignMocksStatements}
+
+${sutStatement}
+
+${describes}
+`;
+
+  const filenameParts = filename.split('.');
+  const ext = filenameParts.pop();
+  fs.writeFileSync(
+    __dirname + '/' + filenameParts.join('.') + '.test-my-ride.' + ext,
+    outputTestFileString
   );
-  const defaultFn = parsed.program.body.filter(
-    node => node.type === 'ExportDefaultDeclaration'
-  );
-
-  const importedFns = parsed.program.body.filter(
-    node => node.type === 'ImportDeclaration'
-  );
-
-  // TODO: traverse AST, within exported functions, find all calls to imported members
-  // Return something like { [fnName]: [importA, importB, blah...] }
-
-  const usedImports = {}; // traverse(parsed, {
-  // ExportNamedDeclaration: path => {
-  //   traverse(path.no)
-  // }
-  // });
-  console.log(usedImports);
-
-  // TODO: write output test file.
-
-  return importedFns;
 };
