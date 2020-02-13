@@ -34,9 +34,12 @@
   },
   "homepage": "https://github.com/jamadan/test-my-ride#readme",
   "dependencies": {
+    "@babel/parser": "^7.8.4",
+    "@babel/runtime": "^7.8.4",
+    "@babel/traverse": "^7.8.4",
+    "core-js": "^3.6.4",
     "mock-my-ride": "^0.1.3",
-    "read-file": "^0.2.0",
-    "@babel/runtime": "^7.8.4"
+    "read-file": "^0.2.0"
   },
   "devDependencies": {
     "@babel/cli": "^7.8.4",
@@ -73,8 +76,7 @@
     "rollup-plugin-commonjs": "^9.3.4",
     "rollup-plugin-node-resolve": "^4.2.4",
     "rollup-plugin-terser": "^5.2.0",
-    "jest": "^25.1.0",
-    "core-js": "^3.6.4"
+    "jest": "^25.1.0"
   },
   "bin": {
     "test-my-ride": "./lib/main/bin/global.js"
