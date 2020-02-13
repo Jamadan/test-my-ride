@@ -10,7 +10,6 @@ import * as subjectUnderTest from './index.js';
 describe('defaultExport', () => {
   it('returns true when isNumberSub is true', () => {
     mockFunction(isNumberSub, true);
-
     expect(subjectUnderTest.default()).toEqual(true);
   });
 });
@@ -20,11 +19,9 @@ describe('increment', () => {
     expect(subjectUnderTest.increment()).toEqual(true);
   });
 });
-
 describe('isString', () => {
   it('returns true when isStringSub is true', () => {
     mockFunction(isStringSub, true);
-
     expect(subjectUnderTest.isString()).toEqual(true);
   });
 });
