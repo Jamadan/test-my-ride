@@ -1,9 +1,9 @@
-import analyseFile from './index';
+import createTestFile from './index';
 
 describe('analyse', () => {
   it('return analysis', async () => {
-    const analysis = await analyseFile('../test/index.js');
+    const analysis = await createTestFile('test/index.js');
 
-    expect(1).toEqual(1);
+    expect(analysis).toEqual(undefined);
   });
 });

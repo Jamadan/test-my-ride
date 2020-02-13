@@ -1,9 +1,9 @@
 import { mockFile, mockFunction } from 'mock-my-ride';
 
-import * as importFns0 from './sub-func';
-mockFile(importFns0);
-const isNumberSub = importFns0.default;
-const { isStringSub } = importFns0;
+import * as importFns1 from './sub-func';
+mockFile(importFns1);
+const isNumberSub = importFns1.default;
+const { isStringSub } = importFns1;
 
 import * as subjectUnderTest from './index.js';
 
