@@ -10,10 +10,32 @@ Creates a test file next to the passed filename, mocks all imports and creates d
 
 ```javascript
 test-my-ride src/path/to/file.js
+
+test-my-ride src/path/to/file.js path/to/config/file.json
 ```
 Run this from terminal. Will create a `src/path/to/file.test-my-ride.js` file.
 
-Currently used for boiler plate test file generation;
+Currently used for boiler plate test file generation.
+
+Config structure:
+
+```javascript
+{
+  "prettier": {
+    "semi": true,
+    "singleQuote": true
+  }
+}
+```
+
+The settings for prettier are overridable and docco is [here](https://prettier.io/docs/en/options.html)
+
+The following values are not overridable:
+```javascript
+  parser: 'babel',
+  plugins: [prettierBabylon]
+```
+
 
 Stuff coming soon:
 - Support test generation for individual function as param
