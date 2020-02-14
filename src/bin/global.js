@@ -16,6 +16,8 @@ var configFileName = configFileExists
   ? args[args.indexOf(args.find(a => a === '--config')) + 1]
   : undefined;
 
+var forceSave = !!args.find(a => a === '--force');
+
 var testMyRide = require('../index');
 
-testMyRide(fileName, fnName, configFileName);
+testMyRide(fileName, fnName, configFileName, forceSave);

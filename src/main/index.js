@@ -14,7 +14,10 @@ import {
   createNamedDescribes
 } from './create-statements';
 
-export default (filename, fnName, pathToJsonConfig) => {
+export default (filename, fnName, pathToJsonConfig, forceSave) => {
+  const filenameParts = filename.split('.');
+  const ext = filenameParts.pop();
+  const fullFileName = path.join(process.cwd() + '/' + filename);
   let config = {
     prettier: {
       parser: 'babel',
@@ -39,7 +42,28 @@ export default (filename, fnName, pathToJsonConfig) => {
       }
     };
   }
-  const file = read.sync(path.join(process.cwd() + '/' + filename), {
+  const saveFilename = path.join(
+    process.cwd() +
+      '/' +
+      filenameParts.join('.') +
+      (config.outputPostfix || '.test-my-ride') +
+      '.' +
+      ext
+  );
+  if (!fs.existsSync(fullFileName)) {
+    // filename not found
+    console.error('filename not found');
+    return;
+  }
+  if (!forceSave && fs.existsSync(saveFilename)) {
+    // test file already found
+    console.error(
+      'test filename already exists. please use --force if you want to overwrite it'
+    );
+    return;
+  }
+
+  const file = read.sync(fullFileName, {
     encoding: 'utf8'
   });
   // console.log(file);
@@ -69,17 +93,8 @@ export default (filename, fnName, pathToJsonConfig) => {
   
   ${nameDescribes}`;
 
-  const filenameParts = filename.split('.');
-  const ext = filenameParts.pop();
   fs.writeFileSync(
-    path.join(
-      process.cwd() +
-        '/' +
-        filenameParts.join('.') +
-        (config.outputPostfix || '.test-my-ride') +
-        '.' +
-        ext
-    ),
+    saveFilename,
     prettier.format(outputTestFileString, config.prettier)
   );
 };
