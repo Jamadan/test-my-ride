@@ -15,7 +15,6 @@ Run this from terminal. Will create a `src/path/to/file.test-my-ride.js` file.
 
 Currently used for boiler plate test file generation.
 
-Only filename
 Config structure:
 
 ```javascript
