@@ -9,18 +9,13 @@ Creates a test file next to the passed filename, mocks all imports and creates d
 # Usage example
 
 ```javascript
-test-my-ride src/path/to/file.js
-
-test-my-ride '' src/path/to/file.js path/to/config/file.json
-
-test-my-ride functionName src/path/to/file.js path/to/config/file.json
+test-my-ride src/path/to/file.js --function functionName --config path/to/config/file.json
 ```
 Run this from terminal. Will create a `src/path/to/file.test-my-ride.js` file.
 
-Use `''` for second param if you want to test a whole file AND supply a config.
-
 Currently used for boiler plate test file generation.
 
+Only filename
 Config structure:
 
 ```javascript
@@ -46,5 +41,6 @@ The following values are not overridable:
 
 Stuff coming soon:
 - add check for overwrite of file
+- error handling for supplied filename
 - Support different templates for create statements which can be supplied (or accepted into the repo via PR)
 - Handle combiners and stuff like `injectIntl` (ignore list maybe? would have to handle use of internal non exported functions. will come back to this)

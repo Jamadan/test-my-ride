@@ -5,8 +5,16 @@ var args = process.argv.splice(process.execArgv.length + 2);
 
 console.log(args);
 var fileName = args[0];
-var fnName = args[1];
-var configFileName = args[2];
+
+var functionNameExists = args.find(a => a === '--function');
+var fnName = functionNameExists
+  ? args[args.indexOf(args.find(a => a === '--function')) + 1]
+  : undefined;
+
+var configFileExists = args.find(a => a === '--config');
+var configFileName = configFileExists
+  ? args[args.indexOf(args.find(a => a === '--config')) + 1]
+  : undefined;
 
 var testMyRide = require('../index');
 
