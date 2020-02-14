@@ -1,6 +1,6 @@
 {
   "name": "test-my-ride",
-  "version": "0.1.15",
+  "version": "0.1.16",
   "description": "Function that creates boiler plate test file with descriptors and automocks from imports",
   "main": "lib/main/index.js",
   "module": "lib/module/index.js",
