@@ -5,8 +5,9 @@ var args = process.argv.splice(process.execArgv.length + 2);
 
 console.log(args);
 var fileName = args[0];
-var configFileName = args[1];
+var fnName = args[1];
+var configFileName = args[2];
 
 var testMyRide = require('../index');
 
-testMyRide(fileName, configFileName);
+testMyRide(fileName, fnName, configFileName);

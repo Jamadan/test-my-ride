@@ -14,7 +14,7 @@ import {
   createNamedDescribes
 } from './create-statements';
 
-export default (filename, pathToJsonConfig) => {
+export default (filename, fnName, pathToJsonConfig) => {
   let config = {
     prettier: {
       parser: 'babel',
@@ -44,7 +44,7 @@ export default (filename, pathToJsonConfig) => {
   });
   // console.log(file);
 
-  const fns = getFns(file);
+  const fns = getFns(file, fnName);
   //console.log(fns);
 
   const importFiles = [...new Set(fns.importedFns.map(fn => fn.location))];

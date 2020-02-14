@@ -1,7 +1,7 @@
 import * as babel from '@babel/parser';
 import traverse from '@babel/traverse';
 
-export default filename => {
+export default (filename, fnName) => {
   const ast = babel.parse(filename, {
     sourceType: 'module',
     plugins: [
@@ -38,31 +38,8 @@ export default filename => {
 
   traverse(ast, {
     ExportDefaultDeclaration: path => {
-      fns.defaultFn = [];
-      traverse(
-        path.node,
-        {
-          CallExpression: path2 => {
-            // We are only going to mock imports
-            if (
-              fns.importedFns
-                .map(fn => fn.name)
-                .includes(path2.node.callee.name)
-            ) {
-              fns.defaultFn.push(path2.node.callee.name);
-            }
-          }
-        },
-        path.scope,
-        path
-      );
-    },
-    ExportNamedDeclaration: path => {
-      const fnName =
-        path.node.declaration.declarations &&
-        path.node.declaration.declarations[0].id.name;
-      if (fnName) {
-        fns.namedFns[fnName] = [];
+      if (!fnName || fnName === 'default') {
+        fns.defaultFn = [];
         traverse(
           path.node,
           {
@@ -73,7 +50,36 @@ export default filename => {
                   .map(fn => fn.name)
                   .includes(path2.node.callee.name)
               ) {
-                fns.namedFns[fnName].push(path2.node.callee.name);
+                fns.defaultFn.push(path2.node.callee.name);
+              }
+            }
+          },
+          path.scope,
+          path
+        );
+      }
+    },
+    ExportNamedDeclaration: path => {
+      const fn =
+        path.node.declaration.declarations &&
+        path.node.declaration.declarations[0].id.name;
+
+      if (
+        fn &&
+        (!fnName || fnName === path.node.declaration.declarations[0].id.name)
+      ) {
+        fns.namedFns[fn] = [];
+        traverse(
+          path.node,
+          {
+            CallExpression: path2 => {
+              // We are only going to mock imports
+              if (
+                fns.importedFns
+                  .map(fn => fn.name)
+                  .includes(path2.node.callee.name)
+              ) {
+                fns.namedFns[fn].push(path2.node.callee.name);
               }
             }
           },
@@ -83,6 +89,17 @@ export default filename => {
       }
     }
   });
+
+  let requiredImports = fns.defaultFn ? fns.defaultFn : [];
+  requiredImports = [
+    ...requiredImports,
+    ...Object.values(fns.namedFns).map(value => value)
+  ];
+
+  requiredImports = requiredImports.flat(Infinity);
+  fns.importedFns = fns.importedFns.filter(fn =>
+    requiredImports.includes(fn.name)
+  );
 
   return fns;
 };

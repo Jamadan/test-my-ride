@@ -41,6 +41,6 @@ The following values are not overridable:
 
 
 Stuff coming soon:
-- Support test generation for individual function as param
+- add check for overwrite of file
 - Support different templates for create statements which can be supplied (or accepted into the repo via PR)
 - Handle combiners and stuff like `injectIntl` (ignore list maybe? would have to handle use of internal non exported functions. will come back to this)
