@@ -24,11 +24,14 @@ Config structure:
   "prettier": {
     "semi": true,
     "singleQuote": true
-  }
+  },
+  "outputPostfix": ".test-jam"
 }
 ```
 
 The settings for prettier are overridable and docco is [here](https://prettier.io/docs/en/options.html)
+
+`outputPost` overrides the default `.test-my-ride` postfix to the test file.
 
 The following values are not overridable:
 ```javascript

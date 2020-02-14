@@ -73,7 +73,12 @@ export default (filename, pathToJsonConfig) => {
   const ext = filenameParts.pop();
   fs.writeFileSync(
     path.join(
-      process.cwd() + '/' + filenameParts.join('.') + '.test-my-ride.' + ext
+      process.cwd() +
+        '/' +
+        filenameParts.join('.') +
+        (config.outputPostfix || '.test-my-ride') +
+        '.' +
+        ext
     ),
     prettier.format(outputTestFileString, config.prettier)
   );
