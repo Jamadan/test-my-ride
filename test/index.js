@@ -1,14 +1,18 @@
 import isNumberSub, { isStringSub } from './sub-func';
 
-const internalJam = jam => {
-  return jam++;
+const internalIncrement = val => {
+  return val++;
+};
+
+const internalIsNumberSub = val => {
+  return isNumberSub(val);
 };
 
 export const increment = number => {
   if (typeof number !== 'number') {
     return undefined;
   } else {
-    return internalJam(number);
+    return internalIncrement(number);
   }
 };
 
@@ -17,5 +21,5 @@ export const isString = val => {
 };
 
 export default val => {
-  return isNumberSub(val);
+  return internalIsNumberSub(val);
 };
