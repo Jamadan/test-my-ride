@@ -39,9 +39,7 @@ The following values are not overridable:
 
 
 Stuff coming soon:
-- rework import outputs
-- handle internal function declarations
+- handle require/resquire.default/require.names/import * as
 - handle function wrappers
 - handle root config file for local installs
-- Support different templates for create statements which can be supplied (or accepted into the repo via PR)
 - Handle combiners and stuff like `injectIntl` (ignore list maybe? would have to handle use of internal non exported functions. will come back to this)

@@ -8,44 +8,34 @@ describe('defaultExport', () => {
     const testFile = read.sync(path.join(process.cwd() + '/test/index.js'), {
       encoding: 'utf8'
     });
-    expect(subjectUnderTest.default(testFile)).toEqual({
-      defaultFn: ['isNumberSub'],
+    const output = subjectUnderTest.default(testFile);
+    expect(output).toEqual({
+      defaultFn: {
+        importedFns: [],
+        internalFns: ['increment', 'internalIsNumberSub']
+      },
+      namedFns: {
+        one: { importedFns: [], internalFns: [] },
+        increment: { importedFns: [], internalFns: ['internalIncrement'] },
+        isString: { importedFns: ['isStringSub'], internalFns: [] }
+      },
       importedFns: [
-        { isDefault: true, location: './sub-func', name: 'isNumberSub' },
-        { isDefault: false, location: './sub-func', name: 'isStringSub' }
+        { name: 'isNumberSub', isDefault: true, location: './sub-func' },
+        { name: 'isStringSub', isDefault: false, location: './sub-func' }
       ],
-      namedFns: { increment: [], isString: ['isStringSub'] }
-    });
-  });
-  it('returns correct values when fn is supplied', () => {
-    const testFile = read.sync(path.join(process.cwd() + '/test/index.js'), {
-      encoding: 'utf8'
-    });
-    expect(subjectUnderTest.default(testFile, 'isString')).toEqual({
-      importedFns: [
-        {
-          isDefault: false,
-          location: './sub-func',
-          name: 'isStringSub'
-        }
-      ],
-      namedFns: { isString: ['isStringSub'] }
-    });
-  });
-  it('returns correct values when default is supplied', () => {
-    const testFile = read.sync(path.join(process.cwd() + '/test/index.js'), {
-      encoding: 'utf8'
-    });
-    expect(subjectUnderTest.default(testFile, 'default')).toEqual({
-      importedFns: [
-        {
-          isDefault: true,
-          location: './sub-func',
-          name: 'isNumberSub'
-        }
-      ],
-      defaultFn: ['isNumberSub'],
-      namedFns: {}
+      internalFns: {
+        a: {
+          importedFns: [],
+          internalFns: ['increment']
+        },
+        internalIncrement: { importedFns: [], internalFns: [] },
+        internalIsNumberSub2: { importedFns: ['isNumberSub'], internalFns: [] },
+        internalIsNumberSub: {
+          importedFns: [],
+          internalFns: ['internalIsNumberSub2']
+        },
+        two: { importedFns: [], internalFns: [] }
+      }
     });
   });
 });

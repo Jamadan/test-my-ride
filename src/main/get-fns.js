@@ -1,7 +1,7 @@
 import * as babel from '@babel/parser';
 import traverse from '@babel/traverse';
 
-export default (filename, fnName) => {
+export default filename => {
   const ast = babel.parse(filename, {
     sourceType: 'module',
     plugins: [
@@ -15,10 +15,11 @@ export default (filename, fnName) => {
   const fns = {
     defaultFn: undefined,
     namedFns: {},
-    importedFns: []
+    importedFns: [],
+    internalFns: {}
   };
 
-  // Do these first as we need them for filtering later
+  // Do the imports first as we need them for filtering later
   traverse(ast, {
     ImportDefaultSpecifier: path => {
       fns.importedFns.push({
@@ -36,50 +37,48 @@ export default (filename, fnName) => {
     }
   });
 
+  // Now get the exported members and the functions they use
   traverse(ast, {
     ExportDefaultDeclaration: path => {
-      if (!fnName || fnName === 'default') {
-        fns.defaultFn = [];
-        traverse(
-          path.node,
-          {
-            CallExpression: path2 => {
-              // We are only going to mock imports
-              if (
-                fns.importedFns
-                  .map(fn => fn.name)
-                  .includes(path2.node.callee.name)
-              ) {
-                fns.defaultFn.push(path2.node.callee.name);
-              }
+      fns.defaultFn = { importedFns: [], internalFns: [] };
+      traverse(
+        path.node,
+        {
+          CallExpression: path2 => {
+            if (
+              fns.importedFns
+                .map(fn => fn.name)
+                .includes(path2.node.callee.name)
+            ) {
+              fns.defaultFn.importedFns.push(path2.node.callee.name);
+            } else {
+              fns.defaultFn.internalFns.push(path2.node.callee.name);
             }
-          },
-          path.scope,
-          path
-        );
-      }
+          }
+        },
+        path.scope,
+        path
+      );
     },
     ExportNamedDeclaration: path => {
       const fn =
         path.node.declaration.declarations &&
         path.node.declaration.declarations[0].id.name;
 
-      if (
-        fn &&
-        (!fnName || fnName === path.node.declaration.declarations[0].id.name)
-      ) {
-        fns.namedFns[fn] = [];
+      if (fn) {
+        fns.namedFns[fn] = { importedFns: [], internalFns: [] };
         traverse(
           path.node,
           {
             CallExpression: path2 => {
-              // We are only going to mock imports
               if (
                 fns.importedFns
                   .map(fn => fn.name)
                   .includes(path2.node.callee.name)
               ) {
-                fns.namedFns[fn].push(path2.node.callee.name);
+                fns.namedFns[fn].importedFns.push(path2.node.callee.name);
+              } else {
+                fns.namedFns[fn].internalFns.push(path2.node.callee.name);
               }
             }
           },
@@ -90,16 +89,39 @@ export default (filename, fnName) => {
     }
   });
 
-  let requiredImports = fns.defaultFn ? fns.defaultFn : [];
-  requiredImports = [
-    ...requiredImports,
-    ...Object.values(fns.namedFns).map(value => value)
-  ];
+  // Now get the internal member and the functions they use
+  traverse(ast, {
+    VariableDeclarator: path => {
+      const exportedNames = Object.keys(fns.namedFns);
+      const internalName = path.node.id.name;
 
-  requiredImports = requiredImports.flat(Infinity);
-  fns.importedFns = fns.importedFns.filter(fn =>
-    requiredImports.includes(fn.name)
-  );
+      if (!exportedNames.includes(internalName)) {
+        fns.internalFns[internalName] = { importedFns: [], internalFns: [] };
+        traverse(
+          path.node,
+          {
+            CallExpression: path2 => {
+              if (
+                fns.importedFns
+                  .map(fn => fn.name)
+                  .includes(path2.node.callee.name)
+              ) {
+                fns.internalFns[internalName].importedFns.push(
+                  path2.node.callee.name
+                );
+              } else {
+                fns.internalFns[internalName].internalFns.push(
+                  path2.node.callee.name
+                );
+              }
+            }
+          },
+          path.scope,
+          path
+        );
+      }
+    }
+  });
 
   return fns;
 };

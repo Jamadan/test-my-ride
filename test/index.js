@@ -4,8 +4,18 @@ const internalIncrement = val => {
   return val++;
 };
 
-const internalIsNumberSub = val => {
+const internalIsNumberSub2 = val => {
   return isNumberSub(val);
+};
+
+const internalIsNumberSub = val => {
+  return internalIsNumberSub2(val);
+};
+
+const two = 2;
+
+export const one = {
+  '1': 1
 };
 
 export const increment = number => {
@@ -21,5 +31,6 @@ export const isString = val => {
 };
 
 export default val => {
+  const a = increment(1);
   return internalIsNumberSub(val);
 };

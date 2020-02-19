@@ -5,19 +5,12 @@ import getFns from './get-fns';
 import prettier from 'prettier/standalone';
 import prettierBabylon from 'prettier/parser-babylon';
 
-import {
-  createImportStatements,
-  createMockFileStatements,
-  createAssignMockStatements,
-  createDefaultDescribe,
-  createSubjectUnderTestStatement,
-  createNamedDescribes
-} from './create-statements';
+import createOutputString from './create-statements';
 
-export default (filename, fnName, pathToJsonConfig, forceSave) => {
-  const filenameParts = filename.split('.');
+export default (filenameToTest, fnName, pathToJsonConfig, forceSave) => {
+  const filenameParts = filenameToTest.split('.');
   const ext = filenameParts.pop();
-  const fullFileName = path.join(process.cwd() + '/' + filename);
+  const fullFileName = path.join(process.cwd() + '/' + filenameToTest);
   let config = {
     prettier: {
       parser: 'babel',
@@ -71,30 +64,12 @@ export default (filename, fnName, pathToJsonConfig, forceSave) => {
   const fns = getFns(file, fnName);
   //console.log(fns);
 
-  const importFiles = [...new Set(fns.importedFns.map(fn => fn.location))];
-  const importStatements = createImportStatements(importFiles);
-  const mockStatements = createMockFileStatements(importFiles);
-
-  const assignMocksStatements = createAssignMockStatements(importFiles, fns);
-  const defaultDescribe = createDefaultDescribe(fns);
-  const nameDescribes = createNamedDescribes(fns);
-
-  const sutStatement = createSubjectUnderTestStatement(filename);
-
-  const outputTestFileString = `import { mockFile, mockFunction } from 'mock-my-ride';
-
-  ${importStatements}
-  ${mockStatements}
-  ${assignMocksStatements}
-
-  ${sutStatement}
-
-  ${defaultDescribe}
-  
-  ${nameDescribes}`;
+  const outputString = config.createOutputString
+    ? config.createOutputString(fns, filenameToTest)
+    : createOutputString(fns, filenameToTest);
 
   fs.writeFileSync(
     saveFilename,
-    prettier.format(outputTestFileString, config.prettier)
+    prettier.format(outputString, config.prettier)
   );
 };
