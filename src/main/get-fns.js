@@ -44,7 +44,6 @@ export default (filename, customWrapperList, ignoreWrappers = false) => {
       path.node,
       {
         CallExpression: internalPath => {
-          // TODO: JAM - stick these in config somewhere
           const wrapperList = customWrapperList || defaultConfig.wrapperList;
 
           if (
