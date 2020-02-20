@@ -14,9 +14,11 @@ export const createImportStatements = fns => {
       const defaultFn = groupedByLocation[groupKey].find(g => g.isDefault);
       const namedFns = groupedByLocation[groupKey].filter(g => !g.isDefault);
 
-      return `import ${defaultFn ? defaultFn.name + ', ' : ''}{ ${namedFns
-        .map(fn => fn.name)
-        .join(', ')} } from '${groupKey}';`;
+      return `import ${
+        defaultFn ? defaultFn.name + (namedFns.length ? ', ' : '') : ''
+      }${
+        namedFns.length ? `{ ${namedFns.map(fn => fn.name).join(', ')} }` : ''
+      } from '${groupKey}';`;
     })
     .join('');
 
@@ -55,6 +57,10 @@ const findImportedDependencies = (fns, functionName, importsUsed) => {
     fn => fn === functionName
   );
 
+  // If not namedFn or internalFn then must be a call to a ref internal to the func
+  // In this case we can ignore because other fns it calls will be picked up through
+  // traverse process
+
   if (namedFn || internalFn) {
     const fn = fns.namedFns[namedFn] || fns.internalFns[internalFn];
     fnsUsed.push(...fn.importedFns);
@@ -71,7 +77,6 @@ const findImportedDependencies = (fns, functionName, importsUsed) => {
 
 export const createDefaultDescribe = fns => {
   const importsUsedNames = findImportedDependencies(fns, 'default');
-
   return `${
     fns.defaultFn
       ? `describe('defaultExport', () => {${createIt(

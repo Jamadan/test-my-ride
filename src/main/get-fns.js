@@ -1,7 +1,8 @@
 import * as babel from '@babel/parser';
 import traverse from '@babel/traverse';
+import defaultConfig from '../config';
 
-export default filename => {
+export default (filename, customWrapperList, ignoreWrappers = false) => {
   const ast = babel.parse(filename, {
     sourceType: 'module',
     plugins: [
@@ -10,7 +11,6 @@ export default filename => {
       'typescript'
     ]
   });
-  // console.log(parsed);
 
   const fns = {
     defaultFn: undefined,
@@ -37,28 +37,52 @@ export default filename => {
     }
   });
 
+  const isImport = name => fns.importedFns.map(fn => fn.name).includes(name);
+
+  const traverseInternal = (path, collections) =>
+    traverse(
+      path.node,
+      {
+        CallExpression: internalPath => {
+          // TODO: JAM - stick these in config somewhere
+          const wrapperList = customWrapperList || defaultConfig.wrapperList;
+
+          if (
+            internalPath.node.callee &&
+            wrapperList.includes(internalPath.node.callee.name)
+          ) {
+            if (!ignoreWrappers) {
+              if (isImport(internalPath.node.callee.name)) {
+                collections.importedFns.push(internalPath.node.callee.name);
+              } else {
+                collections.internalFns.push(internalPath.node.callee.name);
+              }
+            }
+            internalPath.node.arguments.forEach(arg => {
+              if (isImport(arg.name)) {
+                collections.importedFns.push(arg.name);
+              } else {
+                collections.internalFns.push(arg.name);
+              }
+            });
+          } else {
+            if (isImport(internalPath.node.callee.name)) {
+              collections.importedFns.push(internalPath.node.callee.name);
+            } else {
+              collections.internalFns.push(internalPath.node.callee.name);
+            }
+          }
+        }
+      },
+      path.scope,
+      path
+    );
+
   // Now get the exported members and the functions they use
   traverse(ast, {
     ExportDefaultDeclaration: path => {
       fns.defaultFn = { importedFns: [], internalFns: [] };
-      traverse(
-        path.node,
-        {
-          CallExpression: path2 => {
-            if (
-              fns.importedFns
-                .map(fn => fn.name)
-                .includes(path2.node.callee.name)
-            ) {
-              fns.defaultFn.importedFns.push(path2.node.callee.name);
-            } else {
-              fns.defaultFn.internalFns.push(path2.node.callee.name);
-            }
-          }
-        },
-        path.scope,
-        path
-      );
+      traverseInternal(path, fns.defaultFn);
     },
     ExportNamedDeclaration: path => {
       const fn =
@@ -67,24 +91,7 @@ export default filename => {
 
       if (fn) {
         fns.namedFns[fn] = { importedFns: [], internalFns: [] };
-        traverse(
-          path.node,
-          {
-            CallExpression: path2 => {
-              if (
-                fns.importedFns
-                  .map(fn => fn.name)
-                  .includes(path2.node.callee.name)
-              ) {
-                fns.namedFns[fn].importedFns.push(path2.node.callee.name);
-              } else {
-                fns.namedFns[fn].internalFns.push(path2.node.callee.name);
-              }
-            }
-          },
-          path.scope,
-          path
-        );
+        traverseInternal(path, fns.namedFns[fn]);
       }
     }
   });
@@ -97,28 +104,7 @@ export default filename => {
 
       if (!exportedNames.includes(internalName)) {
         fns.internalFns[internalName] = { importedFns: [], internalFns: [] };
-        traverse(
-          path.node,
-          {
-            CallExpression: path2 => {
-              if (
-                fns.importedFns
-                  .map(fn => fn.name)
-                  .includes(path2.node.callee.name)
-              ) {
-                fns.internalFns[internalName].importedFns.push(
-                  path2.node.callee.name
-                );
-              } else {
-                fns.internalFns[internalName].internalFns.push(
-                  path2.node.callee.name
-                );
-              }
-            }
-          },
-          path.scope,
-          path
-        );
+        traverseInternal(path, fns.internalFns[internalName]);
       }
     }
   });

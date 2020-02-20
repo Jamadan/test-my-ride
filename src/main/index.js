@@ -3,7 +3,7 @@ import * as read from 'read-file';
 import fs from 'fs';
 import getFns from './get-fns';
 import prettier from 'prettier/standalone';
-import prettierBabylon from 'prettier/parser-babylon';
+import defaultConfig from '../config';
 
 import createOutputString from './create-statements';
 
@@ -11,13 +11,9 @@ export default (filenameToTest, fnName, pathToJsonConfig, forceSave) => {
   const filenameParts = filenameToTest.split('.');
   const ext = filenameParts.pop();
   const fullFileName = path.join(process.cwd() + '/' + filenameToTest);
+
   let config = {
-    prettier: {
-      parser: 'babel',
-      plugins: [prettierBabylon],
-      semi: true,
-      singleQuote: true
-    }
+    prettier: defaultConfig.prettier
   };
   if (pathToJsonConfig) {
     const jsonConfig = require(path.join(
@@ -29,8 +25,8 @@ export default (filenameToTest, fnName, pathToJsonConfig, forceSave) => {
       prettier: {
         ...jsonConfig.prettier,
         ...{
-          parser: 'babel',
-          plugins: [prettierBabylon]
+          parser: defaultConfig.prettier.parser,
+          plugins: defaultConfig.prettier.plugins
         }
       }
     };

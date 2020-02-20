@@ -40,6 +40,6 @@ The following values are not overridable:
 
 Stuff coming soon:
 - handle require/resquire.default/require.names/import * as
-- handle function wrappers
 - handle root config file for local installs
-- Handle combiners and stuff like `injectIntl` (ignore list maybe? would have to handle use of internal non exported functions. will come back to this)
+- updated function wrapper list
+- output using result func for creste selector
