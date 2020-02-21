@@ -21,12 +21,22 @@ describe('injectIntl', () => {
         `import isNumberSub from './sub-func';import { createSelector } from 'reselect';import { selectSomeStuff } from '../someLocation';import injectIntl from 'injectIntl';`
       );
     });
+    it('returns correct string when ignoreWrappers is true', () => {
+      expect(subjectUnderTest.createImportStatements(fns, true)).toEqual(
+        `import isNumberSub from './sub-func';import { selectSomeStuff } from '../someLocation';`
+      );
+    });
   });
 
   describe('createMockFileStatements', () => {
     it('returns correct string', () => {
       expect(subjectUnderTest.createMockFileStatements(fns)).toEqual(
         `mockFunctions(require('./sub-func'));mockFunctions(require('reselect'));mockFunctions(require('../someLocation'));mockFunctions(require('injectIntl'));`
+      );
+    });
+    it('returns correct string when ignore wrappers is true', () => {
+      expect(subjectUnderTest.createMockFileStatements(fns, true)).toEqual(
+        `mockFunctions(require('./sub-func'));mockFunctions(require('../someLocation'));`
       );
     });
   });
@@ -42,7 +52,7 @@ describe('injectIntl', () => {
   describe('createNamedDescribes', () => {
     it('returns correct string', () => {
       expect(subjectUnderTest.createNamedDescribes(fns)).toEqual(
-        `describe('selectIsGoogleAdsEnabled', () => {it('returns true when createSelector, selectSomeStuff is true', () => {setMockValue(createSelector, true);setMockValue(selectSomeStuff, true);expect(subjectUnderTest.selectIsGoogleAdsEnabled()).toEqual(true);});});`
+        `describe('selectIsGoogleAdsEnabled', () => {it('returns true when selectSomeStuff is true', () => {const testValue = 'foo'; setMockValue(selectSomeStuff, true);expect(subjectUnderTest.selectIsGoogleAdsEnabled.resultFunc(selectSomeStuff, testValue).toEqual(true));});});`
       );
     });
   });
@@ -51,6 +61,14 @@ describe('injectIntl', () => {
     it('returns correct string', () => {
       expect(subjectUnderTest.createIt('jam', ['sub1', 'sub2'])).toEqual(
         `it('returns true when sub1, sub2 is true', () => {setMockValue(sub1, true);setMockValue(sub2, true);expect(subjectUnderTest.jam()).toEqual(true);});`
+      );
+    });
+
+    it('returns correct reselect string', () => {
+      expect(
+        subjectUnderTest.createIt('jam', ['createSelector', 'sub2'])
+      ).toEqual(
+        `it('returns true when sub2 is true', () => {const testValue = 'foo'; setMockValue(sub2, true);expect(subjectUnderTest.jam.resultFunc(sub2, testValue).toEqual(true));});`
       );
     });
   });

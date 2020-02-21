@@ -1,3 +1,5 @@
+import defaultConfig from '../config';
+
 const groupBy = key => array =>
   array.reduce((objectsByKeyValue, obj) => {
     const value = obj[key];
@@ -5,14 +7,19 @@ const groupBy = key => array =>
     return objectsByKeyValue;
   }, {});
 
-export const createImportStatements = fns => {
+export const createImportStatements = (fns, ignoreWrappers) => {
   const groupByimportFile = groupBy('location');
-  const groupedByLocation = groupByimportFile(fns.importedFns);
-
+  const groupedByLocation = !ignoreWrappers
+    ? groupByimportFile(fns.importedFns)
+    : groupByimportFile(
+        fns.importedFns.filter(
+          fn => !defaultConfig.wrapperList.includes(fn.name)
+        )
+      );
   const statements = Object.keys(groupedByLocation)
     .map(groupKey => {
-      const defaultFn = groupedByLocation[groupKey].find(g => g.isDefault);
-      const namedFns = groupedByLocation[groupKey].filter(g => !g.isDefault);
+      let defaultFn = groupedByLocation[groupKey].find(g => g.isDefault);
+      let namedFns = groupedByLocation[groupKey].filter(g => !g.isDefault);
 
       return `import ${
         defaultFn ? defaultFn.name + (namedFns.length ? ', ' : '') : ''
@@ -25,9 +32,15 @@ export const createImportStatements = fns => {
   return statements;
 };
 
-export const createMockFileStatements = fns => {
+export const createMockFileStatements = (fns, ignoreWrappers) => {
   const groupByimportFile = groupBy('location');
-  const groupedByLocation = groupByimportFile(fns.importedFns);
+  const groupedByLocation = !ignoreWrappers
+    ? groupByimportFile(fns.importedFns)
+    : groupByimportFile(
+        fns.importedFns.filter(
+          fn => !defaultConfig.wrapperList.includes(fn.name)
+        )
+      );
 
   const statements = Object.keys(groupedByLocation)
     .map(groupKey => {
@@ -75,19 +88,20 @@ const findImportedDependencies = (fns, functionName, importsUsed) => {
   return [...new Set(fnsUsed)];
 };
 
-export const createDefaultDescribe = fns => {
+export const createDefaultDescribe = (fns, ignoreWrappers) => {
   const importsUsedNames = findImportedDependencies(fns, 'default');
   return `${
     fns.defaultFn
       ? `describe('defaultExport', () => {${createIt(
           'default',
-          importsUsedNames
+          importsUsedNames,
+          ignoreWrappers
         )}});`
       : ''
   }`;
 };
 
-export const createNamedDescribes = fns => {
+export const createNamedDescribes = (fns, ignoreWrappers) => {
   return Object.keys(fns.namedFns)
     .map(fnName => {
       const importsUsedNames = findImportedDependencies(fns, fnName);
@@ -95,7 +109,8 @@ export const createNamedDescribes = fns => {
         fns.defaultFn
           ? `describe('${fnName}', () => {${createIt(
               fnName,
-              importsUsedNames
+              importsUsedNames,
+              ignoreWrappers
             )}});`
           : ''
       }`;
@@ -103,9 +118,45 @@ export const createNamedDescribes = fns => {
     .join('');
 };
 
-export const createIt = (name, fns) => {
+const createReselectIt = (name, fns, ignoreWrappers) => {
+  const resultFuncStatement = fns.length
+    ? fns
+        .map((fn, i) => (i !== 0 ? fn : undefined))
+        .filter(Boolean)
+        .join(', ')
+    : '';
+  return `it('returns true when ${fns
+    .filter(fn => fn !== 'createSelector')
+    .join(', ')} is true', () => {const testValue = 'foo'; ${
+    fns.length
+      ? fns
+          .map(fn =>
+            fn !== 'createSelector' ||
+            (ignoreWrappers && !defaultConfig.wrapperList.includes(fn))
+              ? `setMockValue(${fn}, true);`
+              : ''
+          )
+          .join(``)
+      : ''
+  }expect(subjectUnderTest.${name}.resultFunc(${resultFuncStatement}, testValue).toEqual(true));});`;
+};
+
+export const createIt = (name, fns, ignoreWrappers) => {
+  // Handle reselect resultFunc
+  if (fns.length && fns[0] === 'createSelector') {
+    return createReselectIt(name, fns, ignoreWrappers);
+  }
   return `it('returns true when ${fns.join(', ')} is true', () => {${
-    fns.length ? fns.map(fn => `setMockValue(${fn}, true);`).join(``) : ''
+    fns.length
+      ? fns
+          .map(fn => {
+            if (ignoreWrappers && defaultConfig.wrapperList.includes(fn)) {
+              return '';
+            }
+            return `setMockValue(${fn}, true);`;
+          })
+          .join(``)
+      : ''
   }expect(subjectUnderTest.${name}()).toEqual(true);});`;
 };
 
@@ -116,11 +167,11 @@ export const createSubjectUnderTestStatement = filename => {
 };
 
 export default (fns, filename) => {
-  const importStatements = createImportStatements(fns);
-  const mockStatements = createMockFileStatements(fns);
+  const importStatements = createImportStatements(fns, true);
+  const mockStatements = createMockFileStatements(fns, true);
 
-  const defaultDescribe = createDefaultDescribe(fns);
-  const nameDescribes = createNamedDescribes(fns);
+  const defaultDescribe = createDefaultDescribe(fns, true);
+  const nameDescribes = createNamedDescribes(fns, true);
 
   const sutStatement = createSubjectUnderTestStatement(filename);
 

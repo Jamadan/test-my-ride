@@ -2,7 +2,7 @@ import * as babel from '@babel/parser';
 import traverse from '@babel/traverse';
 import defaultConfig from '../config';
 
-export default (filename, customWrapperList, ignoreWrappers = false) => {
+export default (filename, customWrapperList) => {
   const ast = babel.parse(filename, {
     sourceType: 'module',
     plugins: [
@@ -50,12 +50,10 @@ export default (filename, customWrapperList, ignoreWrappers = false) => {
             internalPath.node.callee &&
             wrapperList.includes(internalPath.node.callee.name)
           ) {
-            if (!ignoreWrappers) {
-              if (isImport(internalPath.node.callee.name)) {
-                collections.importedFns.push(internalPath.node.callee.name);
-              } else {
-                collections.internalFns.push(internalPath.node.callee.name);
-              }
+            if (isImport(internalPath.node.callee.name)) {
+              collections.importedFns.push(internalPath.node.callee.name);
+            } else {
+              collections.internalFns.push(internalPath.node.callee.name);
             }
             internalPath.node.arguments.forEach(arg => {
               if (isImport(arg.name)) {
