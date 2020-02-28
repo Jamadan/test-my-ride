@@ -6,7 +6,7 @@ import { mockFunctions, setMockValue } from 'mock-my-ride';
 mockFunctions(require('./sub-func'));
 import isNumberSub, { isStringSub } from './sub-func';
 
-import * as subjectUnderTest from './test/index';
+import * as subjectUnderTest from './index';
 
 describe('defaultExport', () => {
   it('returns true when isNumberSub is true', () => {
