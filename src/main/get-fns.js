@@ -1,8 +1,7 @@
 import * as babel from '@babel/parser';
 import traverse from '@babel/traverse';
-import defaultConfig from '../config';
 
-export default (filename, customWrapperList) => {
+export default filename => {
   const ast = babel.parse(filename, {
     sourceType: 'module',
     plugins: [
@@ -39,34 +38,18 @@ export default (filename, customWrapperList) => {
 
   const isImport = name => fns.importedFns.map(fn => fn.name).includes(name);
 
-  const traverseInternal = (path, collections) =>
+  const traverseInternal = (path, collections, pathName) =>
     traverse(
       path.node,
       {
-        CallExpression: internalPath => {
-          const wrapperList = customWrapperList || defaultConfig.wrapperList;
-
-          if (
-            internalPath.node.callee &&
-            wrapperList.includes(internalPath.node.callee.name)
-          ) {
-            if (isImport(internalPath.node.callee.name)) {
-              collections.importedFns.push(internalPath.node.callee.name);
+        Identifier: internalPath => {
+          if (internalPath.node.name !== pathName) {
+            if (isImport(internalPath.node.name)) {
+              !collections.importedFns.includes(internalPath.node.name) &&
+                collections.importedFns.push(internalPath.node.name);
             } else {
-              collections.internalFns.push(internalPath.node.callee.name);
-            }
-            internalPath.node.arguments.forEach(arg => {
-              if (isImport(arg.name)) {
-                collections.importedFns.push(arg.name);
-              } else {
-                collections.internalFns.push(arg.name);
-              }
-            });
-          } else {
-            if (isImport(internalPath.node.callee.name)) {
-              collections.importedFns.push(internalPath.node.callee.name);
-            } else {
-              collections.internalFns.push(internalPath.node.callee.name);
+              !collections.internalFns.includes(internalPath.node.name) &&
+                collections.internalFns.push(internalPath.node.name);
             }
           }
         }
@@ -79,7 +62,7 @@ export default (filename, customWrapperList) => {
   traverse(ast, {
     ExportDefaultDeclaration: path => {
       fns.defaultFn = { importedFns: [], internalFns: [] };
-      traverseInternal(path, fns.defaultFn);
+      traverseInternal(path, fns.defaultFn, 'default');
     },
     ExportNamedDeclaration: path => {
       const fn =
@@ -88,7 +71,7 @@ export default (filename, customWrapperList) => {
 
       if (fn) {
         fns.namedFns[fn] = { importedFns: [], internalFns: [] };
-        traverseInternal(path, fns.namedFns[fn]);
+        traverseInternal(path, fns.namedFns[fn], fn);
       }
     }
   });
@@ -101,10 +84,37 @@ export default (filename, customWrapperList) => {
 
       if (!exportedNames.includes(internalName)) {
         fns.internalFns[internalName] = { importedFns: [], internalFns: [] };
-        traverseInternal(path, fns.internalFns[internalName]);
+        traverseInternal(path, fns.internalFns[internalName], internalName);
       }
     }
   });
 
+  // Now filter through the internal declarations to remove the local vars
+  const filterFns = (fns, internalFns) => {
+    return internalFns.filter(fn => {
+      return (
+        Object.keys(fns.internalFns).includes(fn) ||
+        Object.keys(fns.namedFns).includes(fn)
+      );
+    });
+  };
+
+  if (fns.defaultFn) {
+    fns.defaultFn.internalFns = filterFns(fns, fns.defaultFn.internalFns);
+  }
+  Object.keys(fns.namedFns).forEach(fnName => {
+    fns.namedFns[fnName].internalFns = filterFns(
+      fns,
+      fns.namedFns[fnName].internalFns
+    );
+  });
+  Object.keys(fns.internalFns).forEach(fnName => {
+    fns.internalFns[fnName].internalFns = filterFns(
+      fns,
+      fns.internalFns[fnName].internalFns
+    );
+  });
+
+  // console.log(JSON.stringify(fns, null, 4));
   return fns;
 };

@@ -42,4 +42,4 @@ Stuff coming soon:
 - handle require/resquire.default/require.names/import * as
 - handle root config file for local installs
 - updated function wrapper list
-- output using result func for creste selector
+- ignore enums, types or interfaces when calling setMockValue in createIt
